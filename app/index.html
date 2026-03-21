@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매쓰플랫 PDF 추출기</title>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            color: #57bf9c;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: #57bf9c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: #45a887;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
+            min-height: 1.2rem;
+        }
+
+        .loader {
+            color: #57bf9c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Mathflat PDF Export</h2>
+        <div class="form-group">
+            <label>아이디</label>
+            <input type="text" id="user_id" placeholder="아이디를 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>비밀번호</label>
+            <input type="password" id="password" placeholder="비밀번호를 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>학습지 번호 (순서)</label>
+            <input type="number" id="worksheet_index" value="1" min="1">
+        </div>
+        <button id="downloadBtn" onclick="handleDownload()">PDF 추출 및 다운로드</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function handleDownload() {
+            const userId = document.getElementById('user_id').value;
+            const password = document.getElementById('password').value;
+            const index = document.getElementById('worksheet_index').value;
+            const btn = document.getElementById('downloadBtn');
+            const status = document.getElementById('status');
+
+            if (!userId || !password) {
+                alert("아이디와 비밀번호를 모두 입력해주세요.");
+                return;
+            }
+
+            // UI 상태 변경
+            btn.disabled = true;
+            status.innerHTML = '<span class="loader">🚀 서버에서 PDF를 생성 중입니다... (약 20~30초 소요)</span>';
+
+            try {
+                const response = await fetch('/download-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        password: password,
+                        worksheet_index: parseInt(index)
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `mathflat_problems.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    status.innerText = "✅ 다운로드가 완료되었습니다!";
+                } else {
+                    const errorData = await response.json();
+                    status.innerText = "❌ 오류: " + (errorData.detail || "알 수 없는 오류 발생");
+                }
+            } catch (err) {
+                status.innerText = "❌ 서버와 통신할 수 없습니다.";
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>
