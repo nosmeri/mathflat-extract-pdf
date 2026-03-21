@@ -3,14 +3,27 @@ FROM python:3.11-slim
 
 # 2. 필수 패키지 및 Chromium 설치
 # 라즈베리파이 환경에 맞는 chromium과 chromedriver를 설치합니다.
+# 2. 필수 패키지 및 Chromium 설치 (Trixie 버전에 맞게 최적화)
 RUN apt-get update && apt-get install -y \
     chromium \
     chromium-driver \
     libnss3 \
-    libgconf-2-4 \
     fonts-liberation \
-    libappindicator3-1 \
     libasound2 \
+    libgbm1 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxrandr2 \
+    libpango-1.0-0 \
+    libcairo2 \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. 작업 디렉토리 설정
