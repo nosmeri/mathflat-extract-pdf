@@ -22,12 +22,20 @@ class LoginRequest(BaseModel):
 # --- PDF 추출 핵심 로직 ---
 def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
     options = Options()
-    options.add_argument("--headless=new")  # 서버 환경을 위한 헤드리스 모드
+    options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
-
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    
+    # 라즈베리파이 패키지로 설치된 경로를 직접 지정합니다.
+    # 보통 /usr/bin/chromedriver 에 위치합니다.
+    service = Service(executable_path="/usr/bin/chromedriver")
+    
+    # 브라우저 실행 파일 경로도 명시적으로 지정해주는 것이 안전합니다.
+    options.binary_location = "/usr/bin/chromium"
+    
+    driver = webdriver.Chrome(service=service, options=options)
     wait = WebDriverWait(driver, 20)
     session = requests.Session()
 
