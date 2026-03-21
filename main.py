@@ -73,7 +73,7 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
             res = session.get(src)
             if res.status_code == 200:
                 img = Image.open(requests.get(src, stream=True).raw).convert("RGB")
-                img_with_margin = ImageOps.expand(img, border=60, fill='white')
+                img_with_margin = ImageOps.expand(img, border=250, fill='white')
                 processed_images.append(img_with_margin)
 
         if not processed_images:
