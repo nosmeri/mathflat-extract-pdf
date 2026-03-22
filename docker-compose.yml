@@ -3,8 +3,14 @@ version: '3.8'
 services:
   mathflat-app:
     build: .
-    ports:
-      - "8000:8000"
     volumes:
       - ./temp_imgs:/app/temp_imgs # 임시 이미지 저장소 공유
     restart: always
+    expose:
+      - "8000"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
