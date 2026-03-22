@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   mathflat-app:
+    container_name: mathflat-app
     build: .
     volumes:
       - ./temp_imgs:/app/temp_imgs # 임시 이미지 저장소 공유
