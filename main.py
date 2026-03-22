@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from PIL import Image, ImageOps
 
-app = FastAPI()
+app = FastAPI(root_path="/mathflat")
 
 # --- 데이터 모델 ---
 class LoginRequest(BaseModel):
