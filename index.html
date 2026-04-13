@@ -124,7 +124,7 @@
             status.innerHTML = '<span class="loader">🚀 서버에서 PDF를 생성 중입니다... (약 20~30초 소요)</span>';
 
             try {
-                const response = await fetch('/download-pdf', {
+                const response = await fetch('/mathflat/download-pdf', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
