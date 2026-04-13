@@ -135,14 +135,31 @@
                 });
 
                 if (response.ok) {
+                    let filename = 'mathflat_problems.pdf';
+                    const disposition = response.headers.get('content-disposition');
+                    if (disposition && disposition.indexOf('attachment') !== -1) {
+                        const utf8Regex = /filename\*=UTF-8''([^;\n]*)/i;
+                        const match = utf8Regex.exec(disposition);
+                        if (match && match[1]) {
+                            filename = decodeURIComponent(match[1]);
+                        } else {
+                            const asciiRegex = /filename="([^"]*)"/i;
+                            const asciiMatch = asciiRegex.exec(disposition);
+                            if (asciiMatch && asciiMatch[1]) {
+                                filename = asciiMatch[1];
+                            }
+                        }
+                    }
+
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `mathflat_problems.pdf`;
+                    a.download = filename;
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
+                    window.URL.revokeObjectURL(url);
                     status.innerText = "✅ 다운로드가 완료되었습니다!";
                 } else {
                     const errorData = await response.json();
