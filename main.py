@@ -68,7 +68,7 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
             time.sleep(3) # 모드 전환 대기
 
         # 3. 이미지 추출 및 PDF 생성
-        img_tags = driver.find_elements(By.CSS_SELECTOR, "main img, .img-container img")
+        img_tags = driver.find_elements(By.CSS_SELECTOR, "div.problem img")
         processed_images = []
         
         for idx, tag in enumerate(img_tags):
