@@ -58,7 +58,13 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
         if len(cards) < worksheet_idx:
             raise Exception("선택한 번호의 학습지가 존재하지 않습니다.")
         
-        cards[worksheet_idx - 1].click()
+        target_card = cards[worksheet_idx - 1]
+        try:
+            worksheet_title = target_card.find_element(By.CSS_SELECTOR, "p.title").text.strip()
+        except:
+            worksheet_title = f"학습지_{worksheet_idx}"
+            
+        target_card.click()
         time.sleep(5) # 문제 로딩 대기
 
         # 빠른 채점 버튼이 있으면 클릭
@@ -87,7 +93,7 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
 
         # PDF 저장
         processed_images[0].save(download_path, save_all=True, append_images=processed_images[1:])
-        return True
+        return worksheet_title
 
     finally:
         driver.quit()
@@ -105,11 +111,11 @@ async def download_pdf(request: LoginRequest, background_tasks: BackgroundTasks)
     try:
         # 이전에 완성한 추출 함수 호출
         # (테스트를 위해 추출 함수가 성공했다고 가정하는 로직을 구현해야 함)
-        success = run_mathflat_extraction(request.user_id, request.password, request.worksheet_index, file_path)
+        worksheet_title = run_mathflat_extraction(request.user_id, request.password, request.worksheet_index, file_path)
         
-        if success and os.path.exists(file_path):
+        if worksheet_title and os.path.exists(file_path):
             background_tasks.add_task(shutil.rmtree, tmp_dir)
-            return FileResponse(path=file_path, filename="mathflat_problems.pdf", media_type='application/pdf')
+            return FileResponse(path=file_path, filename=f"{worksheet_title}.pdf", media_type='application/pdf')
         else:
             raise Exception("PDF 생성 실패")
     except Exception as e:
