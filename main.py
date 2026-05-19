@@ -64,13 +64,13 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
         except:
             worksheet_title = f"학습지_{worksheet_idx}"
             
-        target_card.click()
+        driver.execute_script("arguments[0].click();", target_card)
         time.sleep(5) # 문제 로딩 대기
 
         # 빠른 채점 버튼이 있으면 클릭
         quick_score_btns = driver.find_elements(By.XPATH, "//button[.//p[text()='빠른 채점']]")
         if quick_score_btns:
-            quick_score_btns[0].click()
+            driver.execute_script("arguments[0].click();", quick_score_btns[0])
             time.sleep(3) # 모드 전환 대기
 
         # 3. 이미지 추출 및 PDF 생성
