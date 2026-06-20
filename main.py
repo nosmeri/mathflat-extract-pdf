@@ -29,7 +29,9 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
     
-    service = Service(ChromeDriverManager().install())
+    service = Service(executable_path="/usr/bin/chromedriver")
+    options.binary_location = "/usr/bin/chromium" 
+
     driver = webdriver.Chrome(service=service, options=options)
     wait = WebDriverWait(driver, 20)
     session = requests.Session()
