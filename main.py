@@ -67,6 +67,13 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
 
         switch = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "label.ms__switch_switch")))
         driver.execute_script("arguments[0].click();", switch)
+
+        scroll_area = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.ms__QuickScoring")))
+        for i in range(0, 100):
+            driver.execute_script("arguments[0].scrollLeft = arguments[0].scrollWidth/100 *"+str(i)+";", scroll_area)
+        
+        time.sleep(1)
+
         # 3. 이미지 추출 및 PDF 생성
         img_tags = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "img.problem-image")))
         print(img_tags)
