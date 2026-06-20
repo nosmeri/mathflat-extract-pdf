@@ -19,6 +19,7 @@ class LoginRequest(BaseModel):
     password: str
     worksheet_index: int = 1  # 몇 번째 학습지를 받을지 (기본 1번)
 
+
 # --- PDF 추출 핵심 로직 ---
 def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
     options = Options()
@@ -28,13 +29,7 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
     
-    # 라즈베리파이 패키지로 설치된 경로를 직접 지정합니다.
-    # 보통 /usr/bin/chromedriver 에 위치합니다.
-    service = Service(executable_path="/usr/bin/chromedriver")
-    
-    # 브라우저 실행 파일 경로도 명시적으로 지정해주는 것이 안전합니다.
-    options.binary_location = "/usr/bin/chromium"
-    
+    service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     wait = WebDriverWait(driver, 20)
     session = requests.Session()
@@ -42,19 +37,19 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
     try:
         # 1. 로그인
         driver.get("https://student.mathflat.com/#/login")
-        driver.find_element(By.NAME, "id").send_keys(user_id)
+        id_input = wait.until(EC.presence_of_element_located((By.NAME, "id")))
+        id_input.send_keys(user_id)
         driver.find_element(By.NAME, "password").send_keys(password)
         driver.find_element(By.CSS_SELECTOR, "button.submit-button").click()
 
         # 로그인 완료 대기
-        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "nav.css-bcfohl")))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ul.card-list")))
         
         for cookie in driver.get_cookies():
             session.cookies.set(cookie['name'], cookie['value'])
 
         # 2. 학습지 목록 분석 및 선택
-        time.sleep(3)
-        cards = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.css-r5jo4f")))
+        cards = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//ul[@class='card-list']/li/a")))
         if len(cards) < worksheet_idx:
             raise Exception("선택한 번호의 학습지가 존재하지 않습니다.")
         
@@ -63,18 +58,16 @@ def run_mathflat_extraction(user_id, password, worksheet_idx, download_path):
             worksheet_title = target_card.find_element(By.CSS_SELECTOR, "p.title").text.strip()
         except:
             worksheet_title = f"학습지_{worksheet_idx}"
-            
+        print(worksheet_title)
         driver.execute_script("arguments[0].click();", target_card)
-        time.sleep(5) # 문제 로딩 대기
 
-        # 빠른 채점 버튼이 있으면 클릭
-        quick_score_btns = driver.find_elements(By.XPATH, "//button[.//p[text()='빠른 채점']]")
-        if quick_score_btns:
-            driver.execute_script("arguments[0].click();", quick_score_btns[0])
-            time.sleep(3) # 모드 전환 대기
+        driver.get(driver.current_url + "/scoring")
 
+        switch = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "label.ms__switch_switch")))
+        driver.execute_script("arguments[0].click();", switch)
         # 3. 이미지 추출 및 PDF 생성
-        img_tags = driver.find_elements(By.CSS_SELECTOR, "div.problem img")
+        img_tags = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "img.problem-image")))
+        print(img_tags)
         processed_images = []
         
         for idx, tag in enumerate(img_tags):
